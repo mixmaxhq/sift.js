@@ -1,16 +1,17 @@
 {
-  "name": "sift",
+  "name": "@mixmaxhq/sift",
   "description": "mongodb query style array filtering",
-  "version": "8.0.1",
+  "version": "1.0.0",
   "repository": "crcn/sift.js",
-  "author": {
-    "name": "Craig Condon",
-    "email": "craig.j.condon@gmail.com",
-    "url": "http://crcn.io"
-  },
+  "author": "Eli Skeggs <eli@mixmax.com> (https://mixmax.com)",
+  "contributors": [
+    {
+      "name": "Craig Condon",
+      "email": "craig.j.condon@gmail.com",
+      "url": "http://crcn.io"
+    }
+  ],
   "license": "MIT",
-  "engines": {},
-  "dependencies": {},
   "typings": "./index.d.ts",
   "husky": {
     "hooks": {
@@ -18,25 +19,31 @@
     }
   },
   "devDependencies": {
-    "prettier": "1.15.3",
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.3",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-es2015-loose": "^8.0.0",
+    "@babel/core": "^7.4.3",
+    "@babel/plugin-transform-modules-commonjs": "^7.4.3",
+    "@babel/register": "^7.4.0",
     "bson": "^3.0.2",
+    "eslint": "^5.16.0",
+    "eslint-config-prettier": "^4.1.0",
+    "eslint-plugin-prettier": "^3.0.1",
     "husky": "^1.2.1",
     "immutable": "^3.7.6",
     "mocha": "^5.2.0",
-    "pretty-quick": "^1.8.0",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.2",
-    "yargs": "^3.15.0"
+    "prettier": "^1.16.4",
+    "pretty-quick": "^1.10.0",
+    "rollup": "^1.8.0"
   },
-  "main": "./lib/index.js",
+  "main": "./dist/index.js",
   "module": "./src/index.js",
   "es2015": "./src/index.js",
   "scripts": {
-    "build": "mkdir -p lib; babel src/index.js > lib/index.js; webpack",
-    "test": "mocha ./test -R spec --compilers js:babel-core/register"
-  }
+    "build": "rollup -c rollup.config.js",
+    "ci": "npm run lint && npm test",
+    "lint": "eslint .",
+    "test": "npm run build && mocha ./test -R spec --require @babel/register"
+  },
+  "files": [
+    "dist",
+    "index.d.ts"
+  ]
 }

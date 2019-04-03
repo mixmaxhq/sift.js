@@ -1,4 +1,7 @@
-node_modules
+/node_modules
+/dist
+/sift.min.js
+*.sublime-workspace
 coverage
 .DS_Store
 .idea

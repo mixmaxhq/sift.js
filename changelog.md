@@ -1,4 +1,15 @@
-## 8.0.0
+## @mixmaxhq
+
+### 1.0.0
+
+- Add async expression support
+- Removes some edge cases
+- Removes browser builds
+- Switchs from yarn to npm
+
+## Former package
+
+### 8.0.0
 
 - DEPRECATED `indexOf` in favor of `array.findIndex(sift(query))`
 - second param is now `options` instead of select function. E.g: `sift(query, { expressions: customExpressions, select: selectValue })`
@@ -14,7 +25,7 @@
 
 - `$in` now uses `toString()` when evaluating objects. Fixes #116.
 
-#### 2.x
+### 2.x
 
 - `use()` now uses a different format:
 
@@ -24,7 +35,7 @@ sift.use({
     return function(b) {
       // compare here
     };
-  }
+  },
 });
 ```
 

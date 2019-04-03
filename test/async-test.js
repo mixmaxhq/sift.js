@@ -1,63 +1,36 @@
-import * as assert from "assert";
-import sift from "..";
+import * as assert from 'assert';
+import sift from '..';
 
-describe(__filename + "#", () => {
+describe('async support', () => {
   [
     [
-      "can use a simple async $eq filter",
+      'can use a simple async $eq filter',
       {
-        $eq: function(value) {
-          return new Promise(function(resolve) {
-            resolve(value > 2);
-          });
-        }
+        async $eq(value) {
+          return value > 2;
+        },
       },
       [1, 2, 3, 4, 5],
-      [3, 4, 5]
-    ]
+      [3, 4, 5],
+    ],
 
-    // [
-    //   "can use a simple async $or filter",
-    //   {
-    //     $and: [
-    //       function(value) {
-    //         new Promise(function(resolve) {
-    //           resolve(value > 2);
-    //         })
-    //       },
-    //       function(value) {
-    //         new Promise(function(resolve) {
-    //           resolve(value < 5);
-    //         })
-    //       }
-    //     ]
-    // }, [1, 2, 3, 4, 5], [3, 4]]
+    [
+      'can use a simple async $or filter',
+      {
+        $and: [async (value) => value > 2, async (value) => value < 5],
+      },
+      [1, 2, 3, 4, 5],
+      [3, 4],
+    ],
   ].forEach(function([description, query, values, result]) {
-    it(description, function() {
-      return new Promise(function(resolve, reject) {
-        var filter = asyncFilter(sift(query));
-        filter(values).then(function(filteredValues) {
-          try {
-            assert.equal(
-              JSON.stringify(filteredValues),
-              JSON.stringify(result)
-            );
-            resolve();
-          } catch (e) {
-            reject(e);
-          }
-        });
-      });
+    it(description, async function() {
+      const filteredValues = await asyncFilter(values, sift(query));
+      assert.equal(JSON.stringify(filteredValues), JSON.stringify(result));
     });
   });
 });
 
-function asyncFilter(filter) {
-  return function(values) {
-    return new Promise(function(resolve, reject) {
-      Promise.all(values.map(filter)).then(function(filtered) {
-        resolve(values.filter((value, index) => filtered[index]));
-      });
-    });
-  };
+async function asyncFilter(values, predicate) {
+  const filtered = await Promise.all(values.map(predicate));
+  return values.filter((value, index) => filtered[index]);
 }

@@ -1,11 +1,11 @@
-import * as assert from "assert";
-import sift, { indexOf as siftIndexOf } from "..";
+import * as assert from 'assert';
+import sift, {indexOf as siftIndexOf} from '..';
 
-describe(__filename + "#", function() {
+describe('basic support', function() {
   it("doesn't sort arrays", function() {
-    var values = [9, 8, 7, 6, 5, 4, 3, 2, 1].filter(
+    const values = [9, 8, 7, 6, 5, 4, 3, 2, 1].filter(
       sift({
-        $or: [3, 2, 1]
+        $or: [3, 2, 1],
       })
     );
 
@@ -15,91 +15,89 @@ describe(__filename + "#", function() {
     assert.equal(values[2], 1);
   });
 
-  it("can create a custom selector, and use it", function() {
-    var sifter = sift(
-      { age: { $gt: 5 } },
+  it('can create a custom selector, and use it', function() {
+    const sifter = sift(
+      {age: {$gt: 5}},
       {
         select: function(item) {
           return item.person;
-        }
+        },
       }
     );
 
-    var people = [{ person: { age: 6 } }],
+    const people = [{person: {age: 6}}],
       filtered = people.filter(sifter);
 
     assert.equal(filtered.length, 1);
     assert.equal(filtered[0], people[0]);
   });
 
-  it("throws an error if the operation is invalid", function() {
-    var err;
+  it('throws an error if the operation is invalid', function() {
+    let err;
     try {
-      sift({ $aaa: 1 })("b");
+      sift({$aaa: 1})('b');
     } catch (e) {
       err = e;
     }
 
-    assert.equal(err.message, "Unknown operation $aaa");
+    assert.equal(err.message, 'Unknown operation $aaa');
   });
 
-  it("can match empty arrays", function() {
-    var statusQuery = {
+  it('can match empty arrays', function() {
+    const statusQuery = {
       $or: [
-        { status: { $exists: false } },
-        { status: [] },
-        { status: { $in: ["urgent", "completed", "today"] } }
-      ]
+        {status: {$exists: false}},
+        {status: []},
+        {status: {$in: ['urgent', 'completed', 'today']}},
+      ],
     };
 
-    var filtered = [
-      { status: [] },
-      { status: ["urgent"] },
-      { status: ["nope"] }
-    ].filter(sift(statusQuery));
+    const filtered = [{status: []}, {status: ['urgent']}, {status: ['nope']}].filter(
+      sift(statusQuery)
+    );
 
     assert.equal(filtered.length, 2);
   });
 
-  it("$ne: null does not hit when field is present", function() {
-    var sifter = sift({ age: { $ne: null } });
+  it('$ne: null does not hit when field is present', function() {
+    const sifter = sift({age: {$ne: null}});
 
-    var people = [{ age: "matched" }, { missed: 1 }];
-    var filtered = people.filter(sifter);
+    const people = [{age: 'matched'}, {missed: 1}];
+    const filtered = people.filter(sifter);
 
     assert.equal(filtered.length, 1);
-    assert.equal(filtered[0].age, "matched");
+    assert.equal(filtered[0].age, 'matched');
   });
 
-  it("$ne does not hit when field is different", function() {
-    var sifter = sift({ age: { $ne: 5 } });
+  it('$ne does not hit when field is different', function() {
+    const sifter = sift({age: {$ne: 5}});
 
-    var people = [{ age: 5 }],
+    const people = [{age: 5}],
       filtered = people.filter(sifter);
 
     assert.equal(filtered.length, 0);
   });
 
-  it("$ne does hit when field exists with different value", function() {
-    var sifter = sift({ age: { $ne: 4 } });
+  it('$ne does hit when field exists with different value', function() {
+    const sifter = sift({age: {$ne: 4}});
 
-    var people = [{ age: 5 }],
+    const people = [{age: 5}],
       filtered = people.filter(sifter);
 
     assert.equal(filtered.length, 1);
   });
 
-  it("$ne does hit when field does not exist", function() {
-    var sifter = sift({ age: { $ne: 5 } });
+  it('$ne does hit when field does not exist', function() {
+    const sifter = sift({age: {$ne: 5}});
 
-    var people = [{}],
+    const people = [{}],
       filtered = people.filter(sifter);
 
     assert.equal(filtered.length, 1);
   });
 
-  it("$eq matches objects that serialize to the same value", function() {
-    var counter = 0;
+  it('$eq matches objects that serialize to the same value', function() {
+    let counter = 0;
     function Book(name) {
       this.name = name;
       this.copyNumber = counter;
@@ -109,18 +107,18 @@ describe(__filename + "#", function() {
       counter += 1;
     }
 
-    var warAndPeace = new Book("War and Peace");
+    const warAndPeace = new Book('War and Peace');
 
-    var sifter = sift({ $eq: warAndPeace });
+    const sifter = sift({$eq: warAndPeace});
 
-    var books = [new Book("War and Peace")];
-    var filtered = books.filter(sifter);
+    const books = [new Book('War and Peace')];
+    const filtered = books.filter(sifter);
 
     assert.equal(filtered.length, 1);
   });
 
-  it("$neq does not match objects that serialize to the same value", function() {
-    var counter = 0;
+  it('$neq does not match objects that serialize to the same value', function() {
+    let counter = 0;
     function Book(name) {
       this.name = name;
       this.copyNumber = counter;
@@ -130,80 +128,80 @@ describe(__filename + "#", function() {
       counter += 1;
     }
 
-    var warAndPeace = new Book("War and Peace");
+    const warAndPeace = new Book('War and Peace');
 
-    var sifter = sift({ $ne: warAndPeace });
+    const sifter = sift({$ne: warAndPeace});
 
-    var books = [new Book("War and Peace")];
-    var filtered = books.filter(sifter);
+    const books = [new Book('War and Peace')];
+    const filtered = books.filter(sifter);
 
     assert.equal(filtered.length, 0);
   });
 
   // https://gist.github.com/jdnichollsc/00ea8cf1204b17d9fb9a991fbd1dfee6
-  it("returns a period between start and end dates", function() {
-    var product = {
-      productTypeCode: "productTypeEnergy",
+  it('returns a period between start and end dates', function() {
+    const product = {
+      productTypeCode: 'productTypeEnergy',
       quantities: [
         {
           period: {
-            startDate: new Date("2017-01-13T05:00:00.000Z"),
-            endDate: new Date("2017-01-31T05:00:00.000Z"),
+            startDate: new Date('2017-01-13T05:00:00.000Z'),
+            endDate: new Date('2017-01-31T05:00:00.000Z'),
             dayType: {
               normal: true,
-              holiday: true
+              holiday: true,
             },
-            specificDays: ["monday", "wednesday", "friday"],
+            specificDays: ['monday', 'wednesday', 'friday'],
             loadType: {
               high: true,
               medium: false,
-              low: false
-            }
+              low: false,
+            },
           },
-          type: "DemandPercentage",
-          quantityValue: "44"
+          type: 'DemandPercentage',
+          quantityValue: '44',
         },
         {
           period: {
-            startDate: new Date("2017-01-13T05:00:00.000Z"),
-            endDate: new Date("2017-01-31T05:00:00.000Z"),
+            startDate: new Date('2017-01-13T05:00:00.000Z'),
+            endDate: new Date('2017-01-31T05:00:00.000Z'),
             dayType: {
               normal: true,
-              holiday: true
+              holiday: true,
             },
             loadType: {
               high: false,
               medium: true,
-              low: false
-            }
+              low: false,
+            },
           },
-          type: "Value",
-          quantityValue: "22"
-        }
-      ]
+          type: 'Value',
+          quantityValue: '22',
+        },
+      ],
     };
 
-    var period = {
-      startDate: new Date("2017-01-08T05:00:00.000Z"),
-      endDate: new Date("2017-01-29T05:00:00.000Z"),
+    const period = {
+      startDate: new Date('2017-01-08T05:00:00.000Z'),
+      endDate: new Date('2017-01-29T05:00:00.000Z'),
       dayType: {
         normal: true,
-        holiday: true
+        holiday: true,
       },
       loadType: {
         high: true,
         medium: false,
-        low: true
+        low: true,
       },
-      specificPeriods: ["3", "4", "5-10"]
+      specificPeriods: ['3', '4', '5-10'],
     };
 
-    var results = product.quantities.filter(
+    const results = product.quantities.filter(
       sift({
         $and: [
-          { "period.startDate": { $lte: period.endDate } },
-          { "period.endDate": { $gte: period.startDate } }
-        ]
+          {'period.startDate': {$lte: period.endDate}},
+          {'period.endDate': {$gte: period.startDate}},
+        ],
       })
     );
 
