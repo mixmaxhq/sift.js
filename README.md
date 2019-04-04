@@ -292,7 +292,6 @@ Matches values based on the given regular expression
 Matches based on some javascript comparison
 
 ```javascript
-[{name: 'frank'}, {name: 'joe'}].filter(sift({$where: "this.name === 'frank'"})); // ["frank"]
 [{name: 'frank'}, {name: 'joe'}].filter(
   sift({
     $where: function() {
@@ -300,6 +299,12 @@ Matches based on some javascript comparison
     },
   })
 ); // ["frank"]
+```
+
+NOT supported, due to risk of RCE vulnerabilities:
+
+```js
+[{name: 'frank'}, {name: 'joe'}].filter(sift({$where: "this.name === 'frank'"})); // ["frank"]
 ```
 
 ### \$elemMatch

@@ -401,7 +401,7 @@ const prepare = Object.assign(Object.create(null), {
    */
 
   $where(operator) {
-    return typeof operator === 'string' ? new Function('obj', 'return ' + operator) : operator;
+    return typeof operator === 'function' ? operator : () => false;
   },
 
   /**

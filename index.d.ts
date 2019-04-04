@@ -23,7 +23,7 @@ export type Query<T extends SupportedTypes> = {
   $regex?: RegExp | string;
   $elemMatch?: ExternalQuery<T>;
   $exists?: boolean;
-  $where?: string | WhereFn<T>;
+  $where?: WhereFn<T>;
   $options?: 'i' | 'g' | 'm' | 'u';
 };
 

@@ -268,8 +268,6 @@ describe('operation handling', () => {
       [{v: 1}, {v: 2}],
       [{v: 1}],
     ],
-    [{$where: 'this.v === 1'}, [{v: 1}, {v: 2}], [{v: 1}]],
-    [{$where: 'obj.v === 1'}, [{v: 1}, {v: 2}], [{v: 1}]],
 
     // $elemMatch
     //{'person': {'$elemMatch': {'gender': 'male', 'age': {'$lt': 30}}}}
@@ -372,5 +370,10 @@ describe('operation handling', () => {
 
   it('should fail for unknown type aliases', () => {
     expect(() => sift({$type: 'beep'})(4)).toThrow(/type alias/);
+  });
+
+  it('should not support strings for $where', function() {
+    assert.equal(sift({$where: 'this.v === 1'})({v: 1}), false);
+    assert.equal(sift({$where: 'obj.v === 1'})({v: 1}), false);
   });
 });
