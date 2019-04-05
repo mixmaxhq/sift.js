@@ -36,11 +36,14 @@ function comparable(value) {
  */
 
 function or(validator) {
-  return function(params, inputValue) /*: boolean | Promise<boolean>*/ {
+  return function(params, inputValue) /*: boolean*/ {
     if (!Array.isArray(inputValue) || !inputValue.length) {
       return validator(params, inputValue);
     }
-    return maybeAsyncSome(inputValue, (item) => validator(params, item));
+    for (let i = 0, n = inputValue.length; i < n; i++) {
+      if (validator(params, get(inputValue, i))) return true;
+    }
+    return false;
   };
 }
 
@@ -48,11 +51,14 @@ function or(validator) {
  */
 
 function and(validator) {
-  return function(params, inputValue) /*: boolean | Promise<boolean>*/ {
+  return function(params, inputValue) /*: boolean*/ {
     if (!Array.isArray(inputValue) || !inputValue.length) {
       return validator(params, inputValue);
     }
-    return maybeAsyncEvery(inputValue, (item) => validator(params, item));
+    for (let i = 0, n = inputValue.length; i < n; i++) {
+      if (!validator(params, get(inputValue, i))) return false;
+    }
+    return true;
   };
 }
 
