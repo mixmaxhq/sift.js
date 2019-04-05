@@ -49,8 +49,10 @@ export function maybeAsyncEvery(a, fn) {
   });
 }
 
+const negate = (value) => maybeAsyncThen(value, (result) => !result);
+
 export function maybeAsyncSome(a, fn) {
-  return maybeAsyncThen(maybeAsyncEvery(a, (...args) => !fn(...args)), (result) => !result);
+  return negate(maybeAsyncEvery(a, (...args) => negate(fn(...args))));
 }
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
