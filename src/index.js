@@ -188,6 +188,7 @@ const expressions = Object.assign(Object.create(null), {
             String(inputValue) !== '[object Object]'
         );
       }),
+      // Use indexOf instead of includes for backwards compatibility with non-standard objects.
       (result) => result || expected.indexOf(comparableB) >= 0
     );
   },
