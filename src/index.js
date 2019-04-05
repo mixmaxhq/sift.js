@@ -55,6 +55,41 @@ function and(validator) {
   };
 }
 
+const typemap = new Map([
+  // Types that may be used verbatim.
+  ...[
+    'number',
+    'string',
+    'object',
+    'array',
+    'binData',
+    'objectId',
+    'date',
+    'null',
+    'regex',
+    'int',
+    'long',
+  ].map((v) => [v, v]),
+
+  ['double', 'number'],
+  ['bool', 'boolean'],
+  ['javascript', 'function'],
+
+  [1, 'number'],
+  [2, 'string'],
+  [3, 'object'],
+  [4, 'array'],
+  [5, 'binData'],
+  [7, 'objectId'],
+  [8, 'boolean'],
+  [9, 'date'],
+  [10, 'null'],
+  [11, 'regex'],
+  [13, 'function'],
+  [16, 'int'],
+  [18, 'long'],
+]);
+
 const expressions = Object.assign(Object.create(null), {
   /**
    */
@@ -174,8 +209,46 @@ const expressions = Object.assign(Object.create(null), {
   /**
    */
 
-  $type(a, b) {
-    return b !== void 0 && (b instanceof a || b.constructor == a);
+  $type(expectedType, value) {
+    if (typeof expectedType === 'string') {
+      switch (expectedType) {
+        case 'null':
+          return value === null;
+        case 'object':
+          return !!value && typeof value === 'object' && isVanillaObject(value);
+        case 'regex':
+          return value instanceof RegExp || toString.call(value) === '[object RegExp]';
+        case 'array':
+          return Array.isArray(value);
+        case 'number':
+        case 'boolean':
+        case 'string':
+          return typeof value === expectedType;
+        case 'int':
+          return (value | 0) === value;
+        case 'long':
+          return Number.isSafeInteger(value);
+        case 'date':
+          return value instanceof Date || toString.call(value) === '[object Date]';
+        case 'objectId':
+          return (
+            !!value &&
+            typeof value === 'object' &&
+            !!value.constructor &&
+            value.constructor.name === 'ObjectID' &&
+            typeof value.toHexString === 'function' &&
+            'generationTime' in value
+          );
+        case 'binData':
+          return Buffer.isBuffer(value);
+        default:
+          /* istanbul ignore next */
+          throw new Error(`internal error: unknown type alias: ${expectedType}`);
+      }
+    }
+    return (
+      value !== void 0 && (value instanceof expectedType || value.constructor === expectedType)
+    );
   },
 
   /**
@@ -344,6 +417,16 @@ const prepare = Object.assign(Object.create(null), {
 
   $exists(a) {
     return !!a;
+  },
+
+  /**
+   */
+
+  $type(expectedType) {
+    if (typeof expectedType !== 'string') return expectedType;
+    const resolvedType = typemap.get(expectedType);
+    if (!resolvedType) throw new Error(`unknown type alias: ${expectedType}`);
+    return resolvedType;
   },
 });
 

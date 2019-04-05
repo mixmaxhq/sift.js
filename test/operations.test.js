@@ -2,6 +2,8 @@ import * as assert from 'assert';
 import sift from '../src/index';
 const ObjectID = require('bson').ObjectID;
 
+const sampleObjectID = new ObjectID();
+
 describe('operation handling', () => {
   [
     // $eq
@@ -161,6 +163,37 @@ describe('operation handling', () => {
     [{$type: Number}, [0, false, 1], [0, 1]],
     [{$type: Boolean}, [0, false, void 0], [false]],
     [{$type: String}, ['1', 1, false], ['1']],
+
+    [{$type: 'date'}, [0, new Date(1)], [new Date(1)]],
+    [{$type: 'number'}, [0, 1.1, false, 1], [0, 1.1, 1]],
+    [{$type: 'double'}, [0, 1.1, false, 1], [0, 1.1, 1]],
+    [{$type: 'bool'}, [0, false, void 0], [false]],
+    [{$type: 'string'}, ['1', 1, false], ['1']],
+    [{$type: 'int'}, ['1', 100, -4, 2 ** 33], [100, -4]],
+    [{$type: 'long'}, ['1', 7, 0, -0, -100, 2 ** 50, 2 ** 60], [7, 0, -0, -100, 2 ** 50]],
+    [{$type: 'bool'}, [true, false, 0, 1, 'true'], [true, false]],
+    [{$type: 'objectId'}, [{}, new Date(1), 34, [], sampleObjectID], [sampleObjectID]],
+    [{$type: 'null'}, [{}, null, undefined, false], [null]],
+    [
+      {$type: 'object'},
+      [{}, Object.create(null), sampleObjectID, new Date(1), null, undefined, false],
+      [{}],
+    ],
+    [
+      {$type: 'regex'},
+      [{}, Object.create(null), sampleObjectID, new Date(1), /abc/, /abc/i, null, undefined, false],
+      [/abc/, /abc/i],
+    ],
+    [
+      {$type: 'array'},
+      [{}, Object.create(null), {length: 0}, sampleObjectID, [], [1, 2, 3]],
+      [[], [1, 2, 3]],
+    ],
+    [
+      {$type: 'binData'},
+      [{}, [1, 2, 3], '\x04\0', Buffer.of(0), Buffer.from('abcdef', 'hex')],
+      [Buffer.of(0), Buffer.from('abcdef', 'hex')],
+    ],
 
     // $all
     [{$all: [1, 2, 3]}, [[1, 2, 3, 4], [1, 2, 4]], [[1, 2, 3, 4]]],
@@ -335,5 +368,9 @@ describe('operation handling', () => {
     ];
 
     expect(JSON.stringify(array.filter(sift(filter)))).toBe(JSON.stringify(matchArray));
+  });
+
+  it('should fail for unknown type aliases', () => {
+    expect(() => sift({$type: 'beep'})(4)).toThrow(/type alias/);
   });
 });
