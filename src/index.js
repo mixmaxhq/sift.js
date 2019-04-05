@@ -342,8 +342,8 @@ const prepare = Object.assign(Object.create(null), {
       return (inputValue) => inputValue == null;
     }
 
-    return (inputValue) => compare(comparable(inputValue), comparable(expression)) === 0;
-    };
+    const comparableExpression = comparable(expression);
+    return (inputValue) => compare(comparable(inputValue), comparableExpression) === 0;
   },
 
   /**
