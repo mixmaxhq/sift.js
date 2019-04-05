@@ -12,6 +12,7 @@
         "destructuring": "all"
       }
     ],
-    "object-shorthand": "error"
+    "object-shorthand": "error",
+    "no-unused-vars": "error"
   }
 }

@@ -1,4 +1,4 @@
-import sift, {indexOf as siftIndexOf} from '..';
+import sift from '..';
 
 describe('basic support', () => {
   it("doesn't sort arrays", () => {
