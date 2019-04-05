@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import sift from '..';
+import sift from '../src/index';
 const ObjectID = require('bson').ObjectID;
 
 describe('operation handling', () => {

@@ -1,4 +1,4 @@
-import sift from '..';
+import sift from '../src/index';
 
 describe('object matching', () => {
   const topic = [

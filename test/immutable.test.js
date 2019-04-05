@@ -1,6 +1,6 @@
 import * as Immutable from 'immutable';
 
-import sift from '..';
+import sift from '../src/index';
 const ObjectID = require('bson').ObjectID;
 
 describe('immutable filtering', () => {

@@ -1,4 +1,4 @@
-import sift from '..';
+import sift from '../src/index';
 import {asyncFilter} from './support/utils';
 
 describe('custom operations', () => {

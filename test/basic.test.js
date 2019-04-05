@@ -1,4 +1,4 @@
-import sift from '..';
+import sift from '../src/index';
 
 describe('basic support', () => {
   it("doesn't sort arrays", () => {
