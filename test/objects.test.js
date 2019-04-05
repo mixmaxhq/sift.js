@@ -170,7 +170,7 @@ describe('object matching', () => {
           },
         },
         {
-          select: function(item) {
+          select(item) {
             return item.hobbies;
           },
         }

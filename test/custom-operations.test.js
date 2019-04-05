@@ -6,7 +6,7 @@ describe('custom operations', () => {
       {$mod2: 2},
       {
         expressions: {
-          $mod2: function(a, b) {
+          $mod2(a, b) {
             return Boolean(a % b);
           },
         },

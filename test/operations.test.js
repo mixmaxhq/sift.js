@@ -225,7 +225,7 @@ describe('operation handling', () => {
     // $where
     [
       {
-        $where: function() {
+        $where() {
           return this.v === 1;
         },
       },
