@@ -19,7 +19,7 @@ describe('custom operations', () => {
     expect(values.filter(filter)).toEqual([3, 4, 5]);
   });
 
-  it('supports custom async operations', async () => {
+  describe('async', () => {
     const values = [{userId: 'abc'}, {userId: 'bcd'}, {userId: 'def'}];
     const docs = [{_id: 'abc', detail: {name: 'Unval'}}, {_id: 'bcd', detail: {name: 'Val'}}];
 
@@ -29,18 +29,94 @@ describe('custom operations', () => {
       return docs.find(({_id}) => _id === id) || null;
     }
 
-    const predicate = sift(
-      {userId: {$query: {collection: 'users', condition: {'detail.name': 'Val'}}}},
-      {
-        expressions: {
-          async $query(params, value) {
-            const doc = await findOne(params.collection, value);
-            return sift(params.condition)(doc);
-          },
-        },
-      }
-    );
+    const expressions = {
+      async $query({collection, condition}, value) {
+        const doc = await findOne(collection, value);
+        return sift(condition, {expressions})(doc);
+      },
+    };
 
-    await expect(asyncFilter(values, predicate)).resolves.toEqual([{userId: 'bcd'}]);
+    const filter = (query, v = values) => asyncFilter(v, sift(query, {expressions}));
+
+    it('supports custom async operations', async () => {
+      await expect(
+        filter({
+          userId: {$query: {collection: 'users', condition: {'detail.name': 'Val'}}},
+        })
+      ).resolves.toEqual([{userId: 'bcd'}]);
+    });
+
+    it('supports custom async operations inside other operations', async () => {
+      await expect(
+        filter({
+          $and: [
+            {userId: {$query: {collection: 'users', condition: {'detail.name': 'Val'}}}},
+            () => true,
+          ],
+        })
+      ).resolves.toEqual([{userId: 'bcd'}]);
+
+      await expect(
+        filter({
+          $or: [
+            {userId: {$query: {collection: 'users', condition: {'detail.name': 'Val'}}}},
+            () => false,
+          ],
+        })
+      ).resolves.toEqual([{userId: 'bcd'}]);
+
+      await expect(
+        filter({
+          $all: [
+            {userId: {$query: {collection: 'users', condition: {'detail.name': 'Val'}}}},
+            () => true,
+            () => true,
+          ],
+        })
+      ).resolves.toEqual([{userId: 'bcd'}]);
+
+      await expect(
+        filter({
+          $nor: [
+            {userId: {$query: {collection: 'users', condition: {'detail.name': 'Val'}}}},
+            {userId: 'def'},
+          ],
+        })
+      ).resolves.toEqual([{userId: 'abc'}]);
+
+      await expect(
+        filter({
+          $not: {userId: {$query: {collection: 'users', condition: {'detail.name': 'Val'}}}},
+        })
+      ).resolves.toEqual([{userId: 'abc'}, {userId: 'def'}]);
+
+      await expect(
+        filter(
+          {
+            users: {
+              $elemMatch: {
+                userA: {$query: {collection: 'users', condition: {'detail.name': 'Val'}}},
+                userB: {$query: {collection: 'users', condition: {'detail.name': 'Unval'}}},
+              },
+            },
+          },
+          [
+            {
+              users: [{userA: 'bcd', userB: 'abc'}, {userA: 'def', userB: 'abc'}],
+            },
+            {
+              users: [{userA: 'def', userB: 'abc'}, {userA: 'bcd', userB: 'def'}],
+            },
+            {
+              users: [{userA: 'abc', userB: 'bcd'}],
+            },
+          ]
+        )
+      ).resolves.toEqual([{users: [{userA: 'bcd', userB: 'abc'}, {userA: 'def', userB: 'abc'}]}]);
+
+      await expect(filter({$where: async ({userId}) => userId === 'bcd'})).resolves.toEqual([
+        {userId: 'bcd'},
+      ]);
+    });
   });
 });
