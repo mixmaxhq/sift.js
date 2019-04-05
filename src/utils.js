@@ -5,9 +5,8 @@ export const isFunction = (value) => typeof value === 'function';
 export const isRegExp = (value) =>
   value instanceof RegExp || toString.call(value) === '[object RegExp]';
 
-function isPromise(value) {
-  return !!value && typeof value === 'object' && typeof value.then === 'function';
-}
+const isPromise = (value) =>
+  !!value && typeof value === 'object' && typeof value.then === 'function';
 
 export function maybeAsyncThen(value, fn) {
   if (isPromise(value)) {

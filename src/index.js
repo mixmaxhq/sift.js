@@ -36,11 +36,11 @@ function comparable(value) {
  */
 
 function or(validator) {
-  return function(a, b) /*: Promise<boolean>*/ {
-    if (!Array.isArray(b) || !b.length) {
-      return validator(a, b);
+  return function(params, inputValue) /*: boolean | Promise<boolean>*/ {
+    if (!Array.isArray(inputValue) || !inputValue.length) {
+      return validator(params, inputValue);
     }
-    return maybeAsyncSome(b, (item) => validator(a, item));
+    return maybeAsyncSome(inputValue, (item) => validator(params, item));
   };
 }
 
@@ -48,11 +48,11 @@ function or(validator) {
  */
 
 function and(validator) {
-  return function(a, b) /*: Promise<boolean>*/ {
-    if (!Array.isArray(b) || !b.length) {
-      return validator(a, b);
+  return function(params, inputValue) /*: boolean | Promise<boolean>*/ {
+    if (!Array.isArray(inputValue) || !inputValue.length) {
+      return validator(params, inputValue);
     }
-    return maybeAsyncEvery(b, (item) => validator(a, item));
+    return maybeAsyncEvery(inputValue, (item) => validator(params, item));
   };
 }
 
@@ -95,60 +95,48 @@ const expressions = Object.assign(Object.create(null), {
   /**
    */
 
-  $eq: or(function(a, b) {
-    return a(b);
-  }),
+  $eq: or((validator, inputValue) => validator(inputValue)),
 
   /**
    */
 
-  $ne: and(function(a, b) {
-    return !a(b);
-  }),
+  $ne: and((validator, inputValue) => !validator(inputValue)),
 
   /**
    */
 
-  $gt: or(function(a, b) {
-    return compare(comparable(b), a) > 0;
-  }),
+  $gt: or((expected, inputValue) => compare(comparable(inputValue), expected) > 0),
 
   /**
    */
 
-  $gte: or(function(a, b) {
-    return compare(comparable(b), a) >= 0;
-  }),
+  $gte: or((expected, inputValue) => compare(comparable(inputValue), expected) >= 0),
 
   /**
    */
 
-  $lt: or(function(a, b) {
-    return compare(comparable(b), a) < 0;
-  }),
+  $lt: or((expected, inputValue) => compare(comparable(inputValue), expected) < 0),
 
   /**
    */
 
-  $lte: or(function(a, b) {
-    return compare(comparable(b), a) <= 0;
-  }),
+  $lte: or((expected, inputValue) => compare(comparable(inputValue), expected) <= 0),
 
   /**
    */
 
-  $mod: or(function(a, b) {
-    return b % a[0] == a[1];
-  }),
+  $mod: or(([divisor, expectedRemainder], inputValue) => inputValue % divisor == expectedRemainder),
 
   /**
+   * @param {Array} expected The expected values to look for.
+   * @param {*} inputValue The value to look at/in for the expected values.
    */
 
-  $in(a, b) {
-    if (Array.isArray(b)) {
-      const aSet = new Set(a);
-      for (let i = b.length; i--; ) {
-        if (aSet.has(comparable(get(b, i)))) {
+  $in(expected, inputValue) {
+    if (Array.isArray(inputValue)) {
+      const aSet = new Set(expected);
+      for (let i = inputValue.length; i--; ) {
+        if (aSet.has(comparable(get(inputValue, i)))) {
           return true;
         }
       }
@@ -156,10 +144,13 @@ const expressions = Object.assign(Object.create(null), {
       return false;
     }
 
-    const comparableB = comparable(b);
-    if (comparableB === b && typeof b === 'object') {
-      for (let i = a.length; i--; ) {
-        if (String(a[i]) === String(b) && String(b) !== '[object Object]') {
+    const comparableB = comparable(inputValue);
+    if (comparableB === inputValue && typeof inputValue === 'object') {
+      for (let i = expected.length; i--; ) {
+        if (
+          String(expected[i]) === String(inputValue) &&
+          String(inputValue) !== '[object Object]'
+        ) {
           return true;
         }
       }
@@ -170,8 +161,8 @@ const expressions = Object.assign(Object.create(null), {
       having a 'null' element in the parameters to $in.
     */
     if (typeof comparableB === 'undefined') {
-      for (let i = a.length; i--; ) {
-        if (a[i] == null) {
+      for (let i = expected.length; i--; ) {
+        if (expected[i] == null) {
           return true;
         }
       }
@@ -181,30 +172,32 @@ const expressions = Object.assign(Object.create(null), {
       Handles the case of {'field': {$in: [/regexp1/, /regexp2/, ...]}}
     */
     return maybeAsyncThen(
-      maybeAsyncSome(a, (query, i) => {
+      maybeAsyncSome(expected, (query, i) => {
         const validator = createRootValidator(query, undefined);
-        return maybeAsyncThen(validator(b, i, a), (result) => {
-          return (
-            !!result && String(result) !== '[object Object]' && String(b) !== '[object Object]'
-          );
-        });
+        return maybeAsyncThen(
+          validator(inputValue, i, expected),
+          (result) =>
+            !!result &&
+            String(result) !== '[object Object]' &&
+            String(inputValue) !== '[object Object]'
+        );
       }),
-      (result) => result || a.indexOf(comparableB) >= 0
+      (result) => result || expected.indexOf(comparableB) >= 0
     );
   },
 
   /**
    */
 
-  $nin(a, b, k, o) {
-    return maybeAsyncThen(expressions.$in(a, b, k, o), (contained) => !contained);
+  $nin(expected, value, key, object) {
+    return maybeAsyncThen(expressions.$in(expected, value, key, object), (contained) => !contained);
   },
 
   /**
    */
 
-  $not(validator, b, k, o) {
-    return maybeAsyncThen(validator(b, k, o), (result) => !result);
+  $not(validator, value, key, object) {
+    return maybeAsyncThen(validator(value, key, object), (result) => !result);
   },
 
   /**
@@ -255,67 +248,68 @@ const expressions = Object.assign(Object.create(null), {
   /**
    */
 
-  $all(a, b, k, o) {
-    return expressions.$and(a, b, k, o);
+  $all(validators, value, key, object) {
+    return expressions.$and(validators, value, key, object);
   },
 
   /**
    */
 
-  $size(a, b) {
-    return !!b && a === b.length;
+  $size(expectedSize, value) {
+    return !!value && expectedSize === value.length;
   },
 
   /**
    */
 
-  $or(a, b, k, o) {
-    return maybeAsyncSome(a, (validator) => validator(b, k, o));
+  $or(validators, value, key, object) {
+    return maybeAsyncSome(validators, (validator) => validator(value, key, object));
   },
 
   /**
    */
 
-  $nor(a, b, k, o) {
-    return maybeAsyncThen(expressions.$or(a, b, k, o), (result) => !result);
+  $nor(validators, value, key, object) {
+    return maybeAsyncThen(expressions.$or(validators, value, key, object), (result) => !result);
   },
 
   /**
    */
 
-  $and(validators, b, k, o) {
-    return maybeAsyncEvery(validators, (validator) => validator(b, k, o));
+  $and(validators, value, key, object) {
+    return maybeAsyncEvery(validators, (validator) => validator(value, key, object));
   },
 
   /**
    */
 
-  $regex: or(function(a, b) {
-    return typeof b === 'string' && a.test(b);
-  }),
+  $regex: or((regex, value) => typeof value === 'string' && regex.test(value)),
 
   /**
+   * @param {function(V): boolean | Promise<boolean>}
+   * @param {V} value
+   * @param {string} key
    */
 
-  $where(a, b, k, o) {
-    return a.call(b, b, k, o);
+  $where(condition, value, key, object) {
+    return condition.call(value, value, key, object);
   },
 
   /**
    */
 
-  $elemMatch(validator, b, k, o) {
-    if (Array.isArray(b)) {
-      return maybeAsyncSome(b, (term) => validator(term));
+  $elemMatch(validator, value, key, object) {
+    if (Array.isArray(value)) {
+      return maybeAsyncSome(value, (term) => validator(term, key, object));
     }
-    return validator(b, k, o);
+    return validator(value, key, object);
   },
 
   /**
    */
 
-  $exists(a, b, k, o) {
-    return has(o, k) === a;
+  $exists(expectedPresence, value, key, object) {
+    return has(object, key) === expectedPresence;
   },
 });
 
@@ -326,70 +320,65 @@ const prepare = Object.assign(Object.create(null), {
   /**
    */
 
-  $eq(a) {
-    if (a instanceof RegExp) {
-      return function(inputValue) {
-        return typeof inputValue === 'string' && a.test(inputValue);
-      };
-    } else if (isFunction(a)) {
-      return a;
-    } else if (Array.isArray(a) && !a.length) {
-      // Special case of a == []
-      return function(b) {
-        return Array.isArray(b) && !b.length;
-      };
-    } else if (a === null) {
-      return function(b) {
-        //will match both null and undefined
-        return b == null;
-      };
+  $eq(expression) {
+    if (expression instanceof RegExp) {
+      return (inputValue) => typeof inputValue === 'string' && expression.test(inputValue);
+    }
+    if (isFunction(expression)) {
+      return expression;
+    }
+    if (Array.isArray(expression) && !expression.length) {
+      // Special case of expression == []
+      return (inputValue) => Array.isArray(inputValue) && !inputValue.length;
+    }
+    if (expression === null) {
+      return (inputValue) => inputValue == null;
     }
 
-    return function(b) {
-      return compare(comparable(b), comparable(a)) === 0;
+    return (inputValue) => compare(comparable(inputValue), comparable(expression)) === 0;
     };
   },
 
   /**
    */
 
-  $ne(a) {
-    return prepare.$eq(a);
+  $ne(expression) {
+    return prepare.$eq(expression);
   },
 
   /**
    */
 
-  $and(a, query, parseSub) {
-    return a.map(parseSub);
+  $and(expressionList, query, parseSub) {
+    return expressionList.map(parseSub);
   },
 
   /**
    */
 
-  $all(a, query, parseSub) {
-    return prepare.$and(a, query, parseSub);
+  $all(expressionList, query, parseSub) {
+    return prepare.$and(expressionList, query, parseSub);
   },
 
   /**
    */
 
-  $or(a, query, parseSub) {
-    return a.map(parseSub);
+  $or(expressionList, query, parseSub) {
+    return expressionList.map(parseSub);
   },
 
   /**
    */
 
-  $nor(a, query, parseSub) {
-    return a.map(parseSub);
+  $nor(expressionList, query, parseSub) {
+    return expressionList.map(parseSub);
   },
 
   /**
    */
 
-  $not(a, query, parseSub) {
-    return parseSub(a);
+  $not(expression, query, parseSub) {
+    return parseSub(expression);
   },
 
   /**
@@ -409,15 +398,15 @@ const prepare = Object.assign(Object.create(null), {
   /**
    */
 
-  $elemMatch(a, query, parseSub) {
-    return parseSub(a);
+  $elemMatch(matchExpression, query, parseSub) {
+    return parseSub(matchExpression);
   },
 
   /**
    */
 
-  $exists(a) {
-    return !!a;
+  $exists(flag) {
+    return !!flag;
   },
 
   /**
@@ -443,23 +432,21 @@ function createValidator(params, validator) {
 /**
  */
 
-function nestedValidator(a, b) {
+function nestedValidator({path, validator, query}, inputValue) {
   const values = [];
-  findValues(b, a.path, 0, b, values);
+  findValues(inputValue, path, 0, inputValue, values);
 
-  // just for consistency with previous implementation
-  const validator = values.length ? a.validator : null;
   if (values.length === 1) {
-    const first = values[0];
-    return validator(first[0], first[1], first[2]);
+    const [[value, key, object]] = values;
+    return validator(value, key, object);
   }
 
   // If the query contains $ne, need to test all elements ANDed together
-  const inclusive = a && a.query && typeof a.query.$ne !== 'undefined';
+  const inclusive = query && typeof query.$ne !== 'undefined';
   let allValid = inclusive;
   for (let i = 0; i < values.length; i++) {
-    const result = values[i];
-    const isValid = validator(result[0], result[1], result[2]);
+    const [value, key, object] = values[i];
+    const isValid = validator(value, key, object);
     if (inclusive) {
       allValid &= isValid;
     } else {
@@ -497,9 +484,7 @@ function findValues(current, keypath, index, object, values) {
 
 function createNestedValidator(keypath, validator, query) {
   const arg = {path: keypath, validator, query};
-  return function(val) {
-    return nestedValidator(arg, val);
-  };
+  return (val) => nestedValidator(arg, val);
 }
 
 /**
