@@ -15,7 +15,7 @@ describe('async support', () => {
     ],
 
     [
-      'can use a simple async $or filter',
+      'can use a simple async $and filter',
       {
         $and: [async (value) => value > 2, async (value) => value < 5],
       },
