@@ -1,4 +1,5 @@
 import sift from '..';
+import {asyncFilter} from './support/utils';
 
 describe('async support', () => {
   [
@@ -28,8 +29,3 @@ describe('async support', () => {
     });
   });
 });
-
-async function asyncFilter(values, predicate) {
-  const filtered = await Promise.all(values.map(predicate));
-  return values.filter((value, index) => filtered[index]);
-}
