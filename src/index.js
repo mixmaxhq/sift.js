@@ -392,7 +392,9 @@ const prepare = Object.assign(Object.create(null), {
    */
 
   $regex(regexParam, query) {
-    return new RegExp(regexParam, query.$options);
+    if (isRegExp(regexParam)) return regexParam;
+    if (typeof regexParam === 'string') return new RegExp(regexParam, query.$options);
+    throw new TypeError(`expected RegExp or regex string, but got ${typeof regexParam}`);
   },
 
   /**

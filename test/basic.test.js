@@ -210,4 +210,8 @@ describe('basic support', () => {
 
     expect(results).toHaveLength(2);
   });
+
+  it('checks regex types', () => {
+    expect(() => sift({$regex: {$mod2: 2}})).toThrow(TypeError);
+  });
 });
