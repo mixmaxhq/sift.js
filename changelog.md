@@ -3,9 +3,9 @@
 ### 1.0.0
 
 - Add async expression support
-- Removes some edge cases
-- Removes browser builds
-- Switchs from yarn to npm
+- Remove some edge cases
+- Remove browser builds
+- Switch from yarn to npm
 
 ## Former package
 
