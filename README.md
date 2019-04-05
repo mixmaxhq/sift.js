@@ -261,7 +261,8 @@ opposite of or:
 
 ### \$size
 
-Matches an array - must match given size:
+Matches an array (or, for backwards-compatibility purposes, any value that reports a `length`
+property that matches the given parameter) with the given size:
 
 ```javascript
 //filtered: ['food','cooking']
