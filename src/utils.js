@@ -1,5 +1,9 @@
-export const isObject = (value) => Object.prototype.toString.call(value) === '[object Object]';
+const {toString} = Object.prototype;
+
+export const isObject = (value) => toString.call(value) === '[object Object]';
 export const isFunction = (value) => typeof value === 'function';
+export const isRegExp = (value) =>
+  value instanceof RegExp || toString.call(value) === '[object RegExp]';
 
 function isPromise(value) {
   return !!value && typeof value === 'object' && typeof value.then === 'function';

@@ -10,6 +10,7 @@ import {
   get,
   has,
   isFunction,
+  isRegExp,
   isObject,
   maybeAsyncEvery,
   maybeAsyncSome,
@@ -217,7 +218,7 @@ const expressions = Object.assign(Object.create(null), {
         case 'object':
           return !!value && typeof value === 'object' && isVanillaObject(value);
         case 'regex':
-          return value instanceof RegExp || toString.call(value) === '[object RegExp]';
+          return isRegExp(value);
         case 'array':
           return Array.isArray(value);
         case 'number':
