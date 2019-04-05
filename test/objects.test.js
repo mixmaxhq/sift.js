@@ -1,7 +1,6 @@
-import assert from 'assert';
 import sift from '..';
 
-describe('object matching', function() {
+describe('object matching', () => {
   const topic = [
     {
       name: 'craig',
@@ -56,7 +55,7 @@ describe('object matching', function() {
     },
   ];
 
-  it('has sifted through photography in brazil count of 1', function() {
+  it('has sifted through photography in brazil count of 1', () => {
     const sifted = topic.filter(
       sift({
         hobbies: {
@@ -67,9 +66,9 @@ describe('object matching', function() {
         },
       })
     );
-    assert.equal(sifted.length, 1);
+    expect(sifted).toHaveLength(1);
   });
-  it('has sifted through photography in brazil, haiti, and costa rica count of 1', function() {
+  it('has sifted through photography in brazil, haiti, and costa rica count of 1', () => {
     const sifted = topic.filter(
       sift({
         hobbies: {
@@ -80,10 +79,10 @@ describe('object matching', function() {
         },
       })
     );
-    assert.equal(sifted.length, 1);
-    assert.equal(sifted[0], topic[0]);
+    expect(sifted).toHaveLength(1);
+    expect(sifted[0]).toBe(topic[0]);
   });
-  it('has a sifted hobbies of photography, cooking, or biking count of 2', function() {
+  it('has a sifted hobbies of photography, cooking, or biking count of 2', () => {
     const sifted = topic.filter(
       sift({
         hobbies: {
@@ -93,9 +92,9 @@ describe('object matching', function() {
         },
       })
     );
-    assert.equal(sifted.length, 2);
+    expect(sifted).toHaveLength(2);
   });
-  it('has sifted to complex count of 2', function() {
+  it('has sifted to complex count of 2', () => {
     const sifted = topic.filter(
       sift({
         hobbies: {
@@ -113,9 +112,9 @@ describe('object matching', function() {
       })
     );
 
-    assert.equal(sifted.length, 2);
+    expect(sifted).toHaveLength(2);
   });
-  it('has sifted to complex count of 0', function() {
+  it('has sifted to complex count of 0', () => {
     const sifted = topic.filter(
       sift({
         hobbies: {
@@ -126,17 +125,17 @@ describe('object matching', function() {
         },
       })
     );
-    assert.equal(sifted.length, 0);
+    expect(sifted).toHaveLength(0);
   });
-  it('has sifted subobject hobbies count of 3', function() {
+  it('has sifted subobject hobbies count of 3', () => {
     const sifted = topic.filter(
       sift({
         'hobbies.name': 'photography',
       })
     );
-    assert.equal(sifted.length, 2);
+    expect(sifted).toHaveLength(2);
   });
-  it('has sifted dot-notation hobbies of photography, cooking, and biking count of 3', function() {
+  it('has sifted dot-notation hobbies of photography, cooking, and biking count of 3', () => {
     const sifted = topic.filter(
       sift({
         'hobbies.name': {
@@ -144,9 +143,9 @@ describe('object matching', function() {
         },
       })
     );
-    assert.equal(sifted.length, 2);
+    expect(sifted).toHaveLength(2);
   });
-  it('has sifted to complex dot-search count of 2', function() {
+  it('has sifted to complex dot-search count of 2', () => {
     const sifted = topic.filter(
       sift({
         'hobbies.name': 'photography',
@@ -159,9 +158,9 @@ describe('object matching', function() {
         },
       })
     );
-    assert.equal(sifted.length, 2);
+    expect(sifted).toHaveLength(2);
   });
-  it('has sifted with selector function count of 2', function() {
+  it('has sifted with selector function count of 2', () => {
     const sifted = topic.filter(
       sift(
         {
@@ -177,27 +176,27 @@ describe('object matching', function() {
         }
       )
     );
-    assert.equal(sifted.length, 2);
+    expect(sifted).toHaveLength(2);
   });
 
-  describe('nesting', function() {
-    it('$eq for nested object', function() {
+  describe('nesting', () => {
+    it('$eq for nested object', () => {
       const sifted = loremArr.filter(sift({'sub.num': {$eq: 10}}));
-      assert(sifted.length > 0);
-      sifted.forEach(function(v) {
-        assert.equal(10, v.sub.num);
-      });
+      expect(sifted.length).toBeGreaterThan(0);
+      for (const v of sifted) {
+        expect(v).toHaveProperty('sub.num', 10);
+      }
     });
 
-    it('$ne for nested object', function() {
+    it('$ne for nested object', () => {
       const sifted = loremArr.filter(sift({'sub.num': {$ne: 10}}));
-      assert(sifted.length > 0);
-      sifted.forEach(function(v) {
-        assert.notEqual(10, v.sub.num);
-      });
+      expect(sifted.length).toBeGreaterThan(0);
+      for (const v of sifted) {
+        expect(v).not.toHaveProperty('sub.num', 10);
+      }
     });
 
-    it('$regex for nested object (one missing key)', function() {
+    it('$regex for nested object (one missing key)', () => {
       const persons = [
         {
           id: 1,
@@ -220,7 +219,7 @@ describe('object matching', function() {
       ];
       const q = {name: {$regex: 'n'}};
       const sifted = persons.filter(sift(q));
-      assert.deepEqual(sifted, [
+      expect(sifted).toEqual([
         {
           id: 3,
           name: 'Dr. Watson',
@@ -230,7 +229,7 @@ describe('object matching', function() {
     });
   });
 
-  describe('arrays of objects', function() {
+  describe('arrays of objects', () => {
     const objects = [
       {
         things: [
@@ -253,37 +252,38 @@ describe('object matching', function() {
         ],
       },
     ];
-    it('$eq for array of objects, matches if at least one exists', function() {
+    it('$eq for array of objects, matches if at least one exists', () => {
       const q = {
         'things.id': 123,
       };
       const sifted = objects.filter(sift(q));
-      assert.deepEqual(sifted, objects);
+      expect(sifted).toEqual(objects);
       const q2 = {
         'things.id': 789,
       };
       const sifted2 = objects.filter(sift(q2));
-      assert.deepEqual(sifted2, [objects[1]]);
+      expect(sifted2).toEqual([objects[1]]);
     });
-    it('$ne for array of objects, returns if none of the array elements match the query', function() {
+    it('$ne for array of objects, returns if none of the array elements match the query', () => {
       const q = {
         'things.id': {
           $ne: 123,
         },
       };
       const sifted = objects.filter(sift(q));
-      assert.deepEqual(sifted, []);
+      expect(sifted).toEqual([]);
       const q2 = {
         'things.id': {
           $ne: 789,
         },
       };
       const sifted2 = objects.filter(sift(q2));
-      assert.deepEqual(sifted2, [objects[0]]);
+      expect(sifted2).toHaveLength(1);
+      expect(sifted2[0]).toBe(objects[0]);
     });
   });
 
-  describe('$where', function() {
+  describe('$elemMatch', function() {
     const couples = [
       {
         name: 'SMITH',
@@ -317,18 +317,18 @@ describe('object matching', function() {
       },
     ];
 
-    it('can filter people', function() {
+    it('can filter people', () => {
       let results = couples.filter(
         sift({person: {$elemMatch: {gender: 'female', age: {$lt: 30}}}})
       );
-      assert.equal(results[0].name, 'SMITH');
+      expect(results[0]).toHaveProperty('name', 'SMITH');
 
       results = [couples[0]].filter(sift({person: {$elemMatch: {gender: 'male', age: {$lt: 30}}}}));
-      assert.equal(results.length, 0);
+      expect(results).toHaveLength(0);
     });
   });
 
-  describe('keypath', function() {
+  describe('keypath', () => {
     const arr = [
       {
         a: {
@@ -339,8 +339,8 @@ describe('object matching', function() {
         },
       },
     ];
-    it('can be used', function() {
-      assert.equal(sift({'a.b.c': 1})(arr[0]), true);
+    it('can be used', () => {
+      expect(sift({'a.b.c': 1})(arr[0])).toBe(true);
     });
   });
 });

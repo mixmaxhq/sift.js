@@ -1,8 +1,7 @@
-import * as assert from 'assert';
 import sift from '..';
 
 describe('custom operations', () => {
-  it('can add a custom $mod operation', function() {
+  it('can add a custom $mod operation', () => {
     const filter = sift(
       {$mod2: 2},
       {
@@ -16,6 +15,6 @@ describe('custom operations', () => {
 
     const values = [1, 2, 3, 4, 5];
 
-    assert.equal(JSON.stringify(values.filter(filter)), JSON.stringify([3, 4, 5]));
+    expect(values.filter(filter)).toEqual([3, 4, 5]);
   });
 });

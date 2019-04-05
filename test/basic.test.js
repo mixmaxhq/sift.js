@@ -1,25 +1,24 @@
-import * as assert from 'assert';
 import sift, {indexOf as siftIndexOf} from '..';
 
-describe('basic support', function() {
-  it("doesn't sort arrays", function() {
+describe('basic support', () => {
+  it("doesn't sort arrays", () => {
     const values = [9, 8, 7, 6, 5, 4, 3, 2, 1].filter(
       sift({
         $or: [3, 2, 1],
       })
     );
 
-    assert.equal(values.length, 3);
-    assert.equal(values[0], 3);
-    assert.equal(values[1], 2);
-    assert.equal(values[2], 1);
+    expect(values.length).toBe(3);
+    expect(values[0]).toBe(3);
+    expect(values[1]).toBe(2);
+    expect(values[2]).toBe(1);
   });
 
-  it('can create a custom selector, and use it', function() {
+  it('can create a custom selector, and use it', () => {
     const sifter = sift(
       {age: {$gt: 5}},
       {
-        select: function(item) {
+        select(item) {
           return item.person;
         },
       }
@@ -28,11 +27,11 @@ describe('basic support', function() {
     const people = [{person: {age: 6}}],
       filtered = people.filter(sifter);
 
-    assert.equal(filtered.length, 1);
-    assert.equal(filtered[0], people[0]);
+    expect(filtered.length).toBe(1);
+    expect(filtered[0]).toBe(people[0]);
   });
 
-  it('throws an error if the operation is invalid', function() {
+  it('throws an error if the operation is invalid', () => {
     let err;
     try {
       sift({$aaa: 1})('b');
@@ -40,10 +39,10 @@ describe('basic support', function() {
       err = e;
     }
 
-    assert.equal(err.message, 'Unknown operation $aaa');
+    expect(err.message).toBe('Unknown operation $aaa');
   });
 
-  it('can match empty arrays', function() {
+  it('can match empty arrays', () => {
     const statusQuery = {
       $or: [
         {status: {$exists: false}},
@@ -56,55 +55,57 @@ describe('basic support', function() {
       sift(statusQuery)
     );
 
-    assert.equal(filtered.length, 2);
+    expect(filtered).toHaveLength(2);
   });
 
-  it('$ne: null does not hit when field is present', function() {
+  it('$ne: null does not hit when field is present', () => {
     const sifter = sift({age: {$ne: null}});
 
     const people = [{age: 'matched'}, {missed: 1}];
     const filtered = people.filter(sifter);
 
-    assert.equal(filtered.length, 1);
-    assert.equal(filtered[0].age, 'matched');
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0]).toHaveProperty('age', 'matched');
   });
 
-  it('$ne does not hit when field is different', function() {
+  it('$ne does not hit when field is different', () => {
     const sifter = sift({age: {$ne: 5}});
 
     const people = [{age: 5}],
       filtered = people.filter(sifter);
 
-    assert.equal(filtered.length, 0);
+    expect(filtered).toHaveLength(0);
   });
 
-  it('$ne does hit when field exists with different value', function() {
+  it('$ne does hit when field exists with different value', () => {
     const sifter = sift({age: {$ne: 4}});
 
     const people = [{age: 5}],
       filtered = people.filter(sifter);
 
-    assert.equal(filtered.length, 1);
+    expect(filtered).toHaveLength(1);
   });
 
-  it('$ne does hit when field does not exist', function() {
+  it('$ne does hit when field does not exist', () => {
     const sifter = sift({age: {$ne: 5}});
 
     const people = [{}],
       filtered = people.filter(sifter);
 
-    assert.equal(filtered.length, 1);
+    expect(filtered).toHaveLength(1);
   });
 
-  it('$eq matches objects that serialize to the same value', function() {
+  it('$eq matches objects that serialize to the same value', () => {
     let counter = 0;
-    function Book(name) {
-      this.name = name;
-      this.copyNumber = counter;
-      this.toJSON = function() {
+    class Book {
+      constructor(name) {
+        this.name = name;
+        this.copyNumber = counter++;
+      }
+
+      toJSON() {
         return this.name; // discard the copy when serializing.
-      };
-      counter += 1;
+      }
     }
 
     const warAndPeace = new Book('War and Peace');
@@ -114,18 +115,20 @@ describe('basic support', function() {
     const books = [new Book('War and Peace')];
     const filtered = books.filter(sifter);
 
-    assert.equal(filtered.length, 1);
+    expect(filtered).toHaveLength(1);
   });
 
-  it('$neq does not match objects that serialize to the same value', function() {
+  it('$neq does not match objects that serialize to the same value', () => {
     let counter = 0;
-    function Book(name) {
-      this.name = name;
-      this.copyNumber = counter;
-      this.toJSON = function() {
+    class Book {
+      constructor(name) {
+        this.name = name;
+        this.copyNumber = counter++;
+      }
+
+      toJSON() {
         return this.name; // discard the copy when serializing.
-      };
-      counter += 1;
+      }
     }
 
     const warAndPeace = new Book('War and Peace');
@@ -135,11 +138,11 @@ describe('basic support', function() {
     const books = [new Book('War and Peace')];
     const filtered = books.filter(sifter);
 
-    assert.equal(filtered.length, 0);
+    expect(filtered).toHaveLength(0);
   });
 
   // https://gist.github.com/jdnichollsc/00ea8cf1204b17d9fb9a991fbd1dfee6
-  it('returns a period between start and end dates', function() {
+  it('returns a period between start and end dates', () => {
     const product = {
       productTypeCode: 'productTypeEnergy',
       quantities: [
@@ -205,6 +208,6 @@ describe('basic support', function() {
       })
     );
 
-    assert.equal(results.length, 2);
+    expect(results).toHaveLength(2);
   });
 });

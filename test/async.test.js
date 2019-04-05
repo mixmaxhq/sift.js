@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import sift from '..';
 
 describe('async support', () => {
@@ -22,10 +21,10 @@ describe('async support', () => {
       [1, 2, 3, 4, 5],
       [3, 4],
     ],
-  ].forEach(function([description, query, values, result]) {
-    it(description, async function() {
+  ].forEach(([description, query, values, result]) => {
+    it(description, async () => {
       const filteredValues = await asyncFilter(values, sift(query));
-      assert.equal(JSON.stringify(filteredValues), JSON.stringify(result));
+      expect(filteredValues).toEqual(result);
     });
   });
 });

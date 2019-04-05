@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import sift from '..';
 const ObjectID = require('bson').ObjectID;
 
-describe('operation handling', function() {
+describe('operation handling', () => {
   [
     // $eq
     [{$eq: 5}, [5, '5', 6], [5]],
@@ -266,37 +266,6 @@ describe('operation handling', function() {
       [{foo: [{name: 'baz'}, {name: 'bar'}]}],
     ],
 
-    // object.toString() tests
-    [
-      {
-        $in: [
-          {
-            toString: function() {
-              return 'a';
-            },
-          },
-        ],
-      },
-      [
-        {
-          toString: function() {
-            return 'a';
-          },
-        },
-        {
-          toString: function() {
-            return 'b';
-          },
-        },
-      ],
-      [
-        {
-          toString: function() {
-            return 'a';
-          },
-        },
-      ],
-    ],
     [{$in: [{}]}, [{}, {}], []],
 
     // based on https://gist.github.com/jdnichollsc/00ea8cf1204b17d9fb9a991fbd1dfee6
@@ -324,13 +293,44 @@ describe('operation handling', function() {
         },
       ],
     ],
-  ].forEach(function(operation, i) {
-    const filter = operation[0];
-    const array = operation[1];
-    const matchArray = operation[2];
-
-    it(i + ': ' + JSON.stringify(filter), function() {
-      assert.equal(JSON.stringify(array.filter(sift(filter))), JSON.stringify(matchArray));
+  ].forEach(([filter, array, matchArray], i) => {
+    it(i + ': ' + JSON.stringify(filter), () => {
+      expect(array.filter(sift(filter))).toEqual(matchArray);
     });
+  });
+
+  it('should support toString methods on objects', () => {
+    const [filter, array, matchArray] = [
+      {
+        $in: [
+          {
+            toString() {
+              return 'a';
+            },
+          },
+        ],
+      },
+      [
+        {
+          toString() {
+            return 'a';
+          },
+        },
+        {
+          toString() {
+            return 'b';
+          },
+        },
+      ],
+      [
+        {
+          toString() {
+            return 'a';
+          },
+        },
+      ],
+    ];
+
+    expect(JSON.stringify(array.filter(sift(filter)))).toBe(JSON.stringify(matchArray));
   });
 });
