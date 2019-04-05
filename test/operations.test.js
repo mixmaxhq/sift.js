@@ -6,6 +6,9 @@ describe('operation handling', () => {
   [
     // $eq
     [{$eq: 5}, [5, '5', 6], [5]],
+    [{$eq: []}, [[], [1, 2], {length: 0}], [[]]],
+    [{wow: 1}, [{notwow: 1}], []],
+    [{z: [3]}, [{z: [3]}, {z: [4]}], [{z: [3]}]],
     ['5', [5, '5', 6], ['5']],
     [false, [false, 'false', true], [false]],
     [true, [1, true], [true]],
