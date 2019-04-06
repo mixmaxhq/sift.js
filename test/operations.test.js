@@ -191,8 +191,8 @@ describe('operation handling', () => {
     ],
     [
       {$type: 'binData'},
-      [{}, [1, 2, 3], '\x04\0', Buffer.of(0), Buffer.from('abcdef', 'hex')],
-      [Buffer.of(0), Buffer.from('abcdef', 'hex')],
+      [{}, [1, 2, 3], '\x04\0', Buffer.alloc(0), Buffer.from('abcdef', 'hex')],
+      [Buffer.alloc(0), Buffer.from('abcdef', 'hex')],
     ],
 
     // $all
