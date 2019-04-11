@@ -1,0 +1,18 @@
+{
+  "extends": ["plugin:prettier/recommended"],
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 2018
+  },
+  "rules": {
+    "no-var": "error",
+    "prefer-const": [
+      "error",
+      {
+        "destructuring": "all"
+      }
+    ],
+    "object-shorthand": "error",
+    "no-unused-vars": "error"
+  }
+}

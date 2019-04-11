@@ -1,8 +1,31 @@
+## @mixmaxhq
+
+### 1.0.0
+
+- Add async expression support
+- Remove some edge cases
+- Remove browser builds
+- Switch from yarn to npm
+
+## Former package
+
+### 8.0.0
+
+- DEPRECATED `indexOf` in favor of `array.findIndex(sift(query))`
+- second param is now `options` instead of select function. E.g: `sift(query, { expressions: customExpressions, select: selectValue })`
+- DEPRECATED `sift(query, array)`. You must now use `array.filter(sift(query))`
+- Queries now expect exact object shape (based on https://github.com/crcn/sift.js/issues/117). E.g: `[{a: 1, b: 1}, {a: 1}]].filter(sift({ a: 1 })) === [{a: 1}]`
+
+### 7.0.0
+
+- Remove global `*.use()` function.
+- converted to ES6
+
 ### 3.3.x
 
 - `$in` now uses `toString()` when evaluating objects. Fixes #116.
 
-#### 2.x
+### 2.x
 
 - `use()` now uses a different format:
 
@@ -12,8 +35,8 @@ sift.use({
     return function(b) {
       // compare here
     };
-  }
-})
+  },
+});
 ```
 
 - all operators are traversable now
