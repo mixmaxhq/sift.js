@@ -40,7 +40,8 @@
     "build": "rollup -c rollup.config.js",
     "ci": "npm run lint && npm test",
     "lint": "eslint .",
-    "test": "jest"
+    "test": "jest",
+    "prepublishOnly": "npm run build"
   },
   "files": [
     "dist",
