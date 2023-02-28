@@ -1,7 +1,7 @@
 {
   "name": "@mixmaxhq/sift",
   "description": "mongodb query style array filtering",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "repository": "crcn/sift.js",
   "author": "Eli Skeggs <eli@mixmax.com> (https://mixmax.com)",
   "contributors": [
