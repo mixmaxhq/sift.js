@@ -236,7 +236,7 @@ const expressions = Object.assign(Object.create(null), {
             !!value &&
             typeof value === 'object' &&
             !!value.constructor &&
-            value.constructor.name === 'ObjectID' &&
+            value.constructor.name === 'ObjectId' &&
             typeof value.toHexString === 'function' &&
             'generationTime' in value
           );
@@ -316,6 +316,10 @@ const expressions = Object.assign(Object.create(null), {
    */
 
   $exists(expectedPresence, value, key, object) {
+    if (object === undefined) {
+      const isPresent = value !== undefined;
+      return isPresent === expectedPresence;
+    }
     return has(object, key) === expectedPresence;
   },
 });

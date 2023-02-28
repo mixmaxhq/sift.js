@@ -214,4 +214,16 @@ describe('basic support', () => {
   it('checks regex types', () => {
     expect(() => sift({$regex: {$mod2: 2}})).toThrow(TypeError);
   });
+
+  it('$exists properly checks non-object values', () => {
+    const falsePresence = sift({$exists: false});
+    expect(falsePresence(42)).toBe(false);
+    expect(falsePresence(undefined)).toBe(true);
+
+    const truePresence = sift({$exists: true});
+    expect(truePresence(0)).toBe(true);
+    expect(truePresence(null)).toBe(true);
+    expect(truePresence('')).toBe(true);
+    expect(truePresence(undefined)).toBe(false);
+  });
 });

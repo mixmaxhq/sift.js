@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import sift from '../src/index';
-const ObjectID = require('bson').ObjectID;
+const ObjectId = require('bson').ObjectId;
 
-const sampleObjectID = new ObjectID();
+const sampleObjectID = new ObjectId();
 
 describe('operation handling', () => {
   [
@@ -31,9 +31,9 @@ describe('operation handling', () => {
     ],
 
     [
-      ObjectID('54dd5546b1d296a54d152e84'),
-      [ObjectID(), ObjectID('54dd5546b1d296a54d152e84')],
-      [ObjectID('54dd5546b1d296a54d152e84')],
+      ObjectId('54dd5546b1d296a54d152e84'),
+      [ObjectId(), ObjectId('54dd5546b1d296a54d152e84')],
+      [ObjectId('54dd5546b1d296a54d152e84')],
     ],
 
     // check for exactness
