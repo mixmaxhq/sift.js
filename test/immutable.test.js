@@ -1,7 +1,6 @@
 import * as Immutable from 'immutable';
 
 import sift from '../src/index';
-const ObjectID = require('bson').ObjectID;
 
 describe('immutable filtering', () => {
   const topic = Immutable.List([1, 2, 3, 4, 5, 6, 6, 4, 3]);
